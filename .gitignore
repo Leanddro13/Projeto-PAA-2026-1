@@ -4,11 +4,10 @@ venv/
 __pycache__/
 
 # Dados e Modelos
-data/
-models/
+#data/
+#models/
 *.csv
 *.tsv
-*.txt
 *.bin
 
 # Outros

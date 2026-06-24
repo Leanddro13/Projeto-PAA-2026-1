@@ -1,0 +1,8 @@
+pandas
+numpy
+scikit-learn
+gensim # Para o Word2Vec
+sentence-transformers # Para os Sentence Embeddings
+hnswlib # Para a busca HNSW
+transformers # Para carregar os modelos locais
+torch
