@@ -1,0 +1,15 @@
+# Ambientes virtuais
+venv/
+.env
+__pycache__/
+
+# Dados e Modelos
+data/
+models/
+*.csv
+*.tsv
+*.txt
+*.bin
+
+# Outros
+.DS_Store
