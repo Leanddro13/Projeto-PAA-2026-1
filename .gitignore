@@ -9,6 +9,9 @@ __pycache__/
 *.csv
 *.tsv
 *.bin
+*.txt
+*.json
+*.tar.gz
 
 # Outros
 .DS_Store
