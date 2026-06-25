@@ -4,6 +4,8 @@ import pandas as pd
 from gensim.models import Word2Vec
 from sklearn.metrics.pairwise import cosine_similarity
 import re
+import os
+import pre_processing
 
 class BuscaVetorialClassica:
     def __init__(self, dataset_path, vector_size=100, window=5, min_count=1):
@@ -25,11 +27,15 @@ class BuscaVetorialClassica:
         """
         print(f"Carregando dados de {self.dataset_path}...")
         try:
+            if not os.path.exists(self.dataset_path):
+                print(f"Arquivo {self.dataset_path} não encontrado. Executando pré-processamento...")
+                pre_processing.preprocessar_dados()
+                
             with open(self.dataset_path, 'r', encoding='utf-8') as f:
                 self.movies = json.load(f)
             print(f"{len(self.movies)} filmes carregados com sucesso.")
-        except FileNotFoundError:
-            print(f"Erro: Arquivo {self.dataset_path} não encontrado. Certifique-se de que a Pessoa 1 gerou o arquivo.")
+        except Exception as e:
+            print(f"Erro ao carregar os dados: {e}")
             self.movies = []
 
     def preprocess_text(self, text):
@@ -51,7 +57,7 @@ class BuscaVetorialClassica:
             return
 
         print("Tokenizando sinopses...")
-        tokenized_synopses = [self.preprocess_text(movie.get('sinopse', '')) for movie in self.movies]
+        tokenized_synopses = [self.preprocess_text(movie.get('plot_limpo', '')) for movie in self.movies]
         
         print("Treinando modelo Word2Vec...")
         # Treinando o modelo Word2Vec
@@ -89,7 +95,7 @@ class BuscaVetorialClassica:
         print("Calculando vetores médios para todos os filmes...")
         self.movie_vectors = []
         for movie in self.movies:
-            tokens = self.preprocess_text(movie.get('sinopse', ''))
+            tokens = self.preprocess_text(movie.get('plot_limpo', ''))
             avg_vector = self._get_average_vector(tokens)
             self.movie_vectors.append(avg_vector)
             
@@ -125,9 +131,9 @@ class BuscaVetorialClassica:
         for idx in top_indices:
             movie = self.movies[idx]
             results.append({
-                'titulo': movie.get('titulo', movie.get('title', 'Desconhecido')),
+                'titulo': movie.get('movie_name', 'Desconhecido'),
                 'similaridade': round(float(similarities[idx]), 4),
-                'sinopse_trecho': movie.get('sinopse', '')[:200] + '...' # Retorna só um pedaço para visualização
+                'sinopse_trecho': movie.get('plot_limpo', '')[:200] + '...' # Retorna só um pedaço para visualização
             })
             
         return results
@@ -136,21 +142,7 @@ class BuscaVetorialClassica:
 if __name__ == "__main__":
     # Caminho do dataset limpo gerado pela Pessoa 1
     # Substitua pelo caminho real quando for rodar
-    caminho_dataset = "../data/dataset_limpo.json"
-    
-    # Para testar o script independentemente, você pode criar um JSON fake se ele não existir:
-    import os
-    if not os.path.exists(caminho_dataset):
-        print(f"Criando dataset de teste em {caminho_dataset} para demonstração...")
-        os.makedirs(os.path.dirname(caminho_dataset), exist_ok=True)
-        fake_data = [
-            {"title": "The Matrix", "sinopse": "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers."},
-            {"title": "Inception", "sinopse": "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O."},
-            {"title": "Interstellar", "sinopse": "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival."},
-            {"title": "Titanic", "sinopse": "A seventeen-year-old aristocrat falls in love with a kind but poor artist aboard the luxurious, ill-fated R.M.S. Titanic."}
-        ]
-        with open(caminho_dataset, 'w', encoding='utf-8') as f:
-            json.dump(fake_data, f, ensure_ascii=False, indent=4)
+    caminho_dataset = "data/dataset_limpo.json"
     
     # 1. Instanciar a classe
     buscador = BuscaVetorialClassica(dataset_path=caminho_dataset)
